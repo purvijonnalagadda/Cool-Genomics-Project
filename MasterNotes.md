@@ -4,6 +4,18 @@
 
 Identify and compare bacteriophage communities in gut metagenomic samples from individuals with major depressive disorder (MDD) and controls using 6 samples.
 
+## Project Directory Structure
+
+```bash
+project_fastq/
+├── raw/
+├── trimmed/
+├── projectfastqc_out/
+├── assembly/
+├── virsorter/
+├── checkv/
+├── logs/
+└── metadata/
 ---
 
 ## Full Workflow
