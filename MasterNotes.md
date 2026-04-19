@@ -26,19 +26,19 @@ conda activate phage-env
 module load sra-toolkit
 ```
 
-# Controls
+## Controls
 fasterq-dump ERR13348288 --split-files
 fasterq-dump ERR13348290 --split-files
 fasterq-dump ERR13348291 --split-files
 
-# MDD
+## MDD
 fasterq-dump ERR13348393 --split-files
 fasterq-dump ERR13348396 --split-files
 fasterq-dump ERR13348397 --split-files
 
 gzip *.fastq
 
-# Converts SRA data into FASTQ files
+### Converts SRA data into FASTQ files
 
 
 # STEP 3: ORGANIZE PROJECT
@@ -51,7 +51,7 @@ mkdir raw trimmed assembly virsorter checkv logs fastqc_out
 mv ../*.fastq.gz raw/
 ```
 
-# Organizes files into directories
+### Organizes files into directories
 
 
 # STEP 4: FASTQC (RAW READS)
@@ -60,7 +60,7 @@ mv ../*.fastq.gz raw/
 fastqc raw/*.fastq.gz -o fastqc_out
 ```
 
-# Checks sequencing quality and adapter content
+### Checks sequencing quality and adapter content
 
 
 # STEP 5: TRIM READS
@@ -77,7 +77,7 @@ for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR133
     -j logs/${sample}_fastp.json
 ```
 
-# Removes adapters and low-quality bases
+### Removes adapters and low-quality bases
 
 
 # STEP 6: FASTQC (TRIMMED READS)
@@ -86,7 +86,7 @@ for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR133
 fastqc trimmed/*.fastq.gz -o fastqc_out
 ```
 
-# Confirms improved read quality
+### Confirms improved read quality
 
 
 # STEP 7: ASSEMBLY (MEGAHIT)
@@ -101,7 +101,7 @@ for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR133
     -o assembly/${sample}
 ```
 
-# Assembles reads into contigs
+### Assembles reads into contigs
 
 
 # STEP 8: ASSEMBLY STATS
@@ -113,14 +113,14 @@ for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR133
     > assembly/${sample}_stats.txt
 ```
 
-# Generates assembly metrics (N50, GC, contig count)
+### Generates assembly metrics (N50, GC, contig count)
 
 
 # STEP 9: SETUP VIRSORTER2
 
 virsorter setup -d ~/db -j 4 --conda-frontend conda
 
-# Downloads viral database
+### Downloads viral database
 
 
 # STEP 10: RUN VIRSORTER2
@@ -136,7 +136,7 @@ for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR133
     --min-length 5000
 ```
 
-# Identifies viral contigs (bacteriophages)
+### Identifies viral contigs (bacteriophages)
 
 
 # STEP 11: COUNT VIRAL CONTIGS
@@ -149,8 +149,7 @@ for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR133
 done > viral_counts.tsv
 ```
 
-
-# Counts viral contigs per sample
+### Counts viral contigs per sample
 
 
 # STEP 12: FILTER CONTIGS ≥ 5 KB
@@ -163,7 +162,7 @@ for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR133
     > virsorter/${sample}/viral_5kb.fa
 ```
 
-# Keeps high-confidence viral contigs
+### Keeps high-confidence viral contigs
 
 
 # STEP 13: SETUP CHECKV
@@ -175,7 +174,7 @@ checkv download_database ./
 cd ..
 ```
 
-# Downloads CheckV database
+### Downloads CheckV database
 
 
 # STEP 14: RUN CHECKV
@@ -190,7 +189,7 @@ for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR133
     -t 8
 ```
 
-# Assesses viral genome quality
+### Assesses viral genome quality
 
 
 # STEP 15: SUMMARIZE CHECKV
@@ -202,7 +201,7 @@ for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR133
   tail -n +2 checkv/${sample}/quality_summary.tsv | cut -f8 | sort | uniq -c
 ```
 
-# Summarizes quality categories
+### Summarizes quality categories
 
 
 # STEP 16: CREATE METADATA
@@ -217,7 +216,7 @@ ERR13348396\tMDD
 ERR13348397\tMDD" > metadata.tsv
 ```
 
-# Defines sample groups
+### Defines sample groups
 
 
 # STEP 17: FINAL ANALYSIS
@@ -226,5 +225,5 @@ Compare:
 Viral contig counts (viral_counts.tsv)
 High-quality viral contigs (CheckV)
 
-# Goal:
+### Goal:
 Identify differences in phage abundance between MDD and controls
