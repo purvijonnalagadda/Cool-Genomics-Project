@@ -227,4 +227,4 @@ Viral contig counts (viral_counts.tsv)
 High-quality viral contigs (CheckV)
 
 # Goal:
-# Identify differences in phage abundance between MDD and controls
+Identify differences in phage abundance between MDD and controls
