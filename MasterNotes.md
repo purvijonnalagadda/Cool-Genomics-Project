@@ -16,7 +16,7 @@ project_fastq/
 ├── checkv/
 ├── logs/
 └── metadata/
----
+```
 
 ## Full Workflow
 
