@@ -17,7 +17,7 @@ module load anaconda3
 conda activate phage-env
 ```
 
-# Loads required bioinformatics tools
+### Loads required bioinformatics tools
 
 
 # STEP 2: DOWNLOAD FASTQ FILES
