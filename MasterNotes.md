@@ -66,7 +66,6 @@ fastqc raw/*.fastq.gz -o fastqc_out
 # STEP 5: TRIM READS
 
 for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
-do
 
 ```bash
   fastp \
@@ -93,7 +92,6 @@ fastqc trimmed/*.fastq.gz -o fastqc_out
 # STEP 7: ASSEMBLY (MEGAHIT)
 
 for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
-do
 
 ```bash
   megahit \
@@ -109,7 +107,6 @@ do
 # STEP 8: ASSEMBLY STATS
 
 for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
-do
 
 ```bash
   seqkit stats -a assembly/${sample}/final.contigs.fa \
