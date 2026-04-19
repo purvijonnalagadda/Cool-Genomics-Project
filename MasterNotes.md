@@ -8,19 +8,23 @@ Identify and compare bacteriophage communities in gut metagenomic samples from i
 
 ## Full Workflow
 
-```bash
+
 # STEP 1: LOAD ENVIRONMENT
 
+```bash
 cd ~
 module load anaconda3
 conda activate phage-env
+```
 
 # Loads required bioinformatics tools
 
 
 # STEP 2: DOWNLOAD FASTQ FILES
 
+```bash
 module load sra-toolkit
+```
 
 # Controls
 fasterq-dump ERR13348288 --split-files
@@ -39,19 +43,22 @@ gzip *.fastq
 
 # STEP 3: ORGANIZE PROJECT
 
+```bash
 mkdir project_fastq
 cd project_fastq
-
 mkdir raw trimmed assembly virsorter checkv logs fastqc_out
 
 mv ../*.fastq.gz raw/
+```
 
 # Organizes files into directories
 
 
 # STEP 4: FASTQC (RAW READS)
 
+```bash
 fastqc raw/*.fastq.gz -o fastqc_out
+```
 
 # Checks sequencing quality and adapter content
 
@@ -60,6 +67,8 @@ fastqc raw/*.fastq.gz -o fastqc_out
 
 for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
 do
+
+```bash
   fastp \
     -i raw/${sample}_1.fastq.gz \
     -I raw/${sample}_2.fastq.gz \
@@ -67,14 +76,16 @@ do
     -O trimmed/${sample}_R2.fastq.gz \
     -h logs/${sample}_fastp.html \
     -j logs/${sample}_fastp.json
-done
+```
 
 # Removes adapters and low-quality bases
 
 
 # STEP 6: FASTQC (TRIMMED READS)
 
+```bash
 fastqc trimmed/*.fastq.gz -o fastqc_out
+```
 
 # Confirms improved read quality
 
@@ -83,12 +94,14 @@ fastqc trimmed/*.fastq.gz -o fastqc_out
 
 for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
 do
+
+```bash
   megahit \
     -1 trimmed/${sample}_R1.fastq.gz \
     -2 trimmed/${sample}_R2.fastq.gz \
     -t 8 \
     -o assembly/${sample}
-done
+```
 
 # Assembles reads into contigs
 
@@ -97,9 +110,11 @@ done
 
 for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
 do
+
+```bash
   seqkit stats -a assembly/${sample}/final.contigs.fa \
     > assembly/${sample}_stats.txt
-done
+```
 
 # Generates assembly metrics (N50, GC, contig count)
 
@@ -114,14 +129,15 @@ virsorter setup -d ~/db -j 4 --conda-frontend conda
 # STEP 10: RUN VIRSORTER2
 
 for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
-do
+
+```bash
   virsorter run \
     -w virsorter/${sample} \
     -i assembly/${sample}/final.contigs.fa \
     --keep-original-seq \
     --include-groups dsDNAphage,ssDNA \
     --min-length 5000
-done
+```
 
 # Identifies viral contigs (bacteriophages)
 
@@ -129,10 +145,13 @@ done
 # STEP 11: COUNT VIRAL CONTIGS
 
 for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
-do
+
+```bash
   count=$(grep -c ">" virsorter/${sample}/final-viral-combined.fa)
   echo -e "${sample}\t${count}"
 done > viral_counts.tsv
+```
+
 
 # Counts viral contigs per sample
 
@@ -140,21 +159,24 @@ done > viral_counts.tsv
 # STEP 12: FILTER CONTIGS ≥ 5 KB
 
 for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
-do
+
+```bash
   seqkit seq -m 5000 \
     virsorter/${sample}/final-viral-combined.fa \
     > virsorter/${sample}/viral_5kb.fa
-done
+```
 
 # Keeps high-confidence viral contigs
 
 
 # STEP 13: SETUP CHECKV
 
+```bash
 mkdir checkv_db
 cd checkv_db
 checkv download_database ./
 cd ..
+```
 
 # Downloads CheckV database
 
@@ -162,13 +184,14 @@ cd ..
 # STEP 14: RUN CHECKV
 
 for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
-do
+
+```bash
   checkv end_to_end \
     virsorter/${sample}/viral_5kb.fa \
     checkv/${sample} \
     -d checkv_db \
     -t 8
-done
+```
 
 # Assesses viral genome quality
 
@@ -176,16 +199,18 @@ done
 # STEP 15: SUMMARIZE CHECKV
 
 for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
-do
+
+```bash
   echo "=== ${sample} ==="
   tail -n +2 checkv/${sample}/quality_summary.tsv | cut -f8 | sort | uniq -c
-done
+```
 
 # Summarizes quality categories
 
 
 # STEP 16: CREATE METADATA
 
+```bash
 echo -e "Sample\tGroup
 ERR13348288\tControl
 ERR13348290\tControl
@@ -193,6 +218,7 @@ ERR13348291\tControl
 ERR13348393\tMDD
 ERR13348396\tMDD
 ERR13348397\tMDD" > metadata.tsv
+```
 
 # Defines sample groups
 
