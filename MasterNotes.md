@@ -222,9 +222,9 @@ ERR13348397\tMDD" > metadata.tsv
 
 # STEP 17: FINAL ANALYSIS
 
-# Compare:
-# - Viral contig counts (viral_counts.tsv)
-# - High-quality viral contigs (CheckV)
+Compare:
+Viral contig counts (viral_counts.tsv)
+High-quality viral contigs (CheckV)
 
 # Goal:
 # Identify differences in phage abundance between MDD and controls
