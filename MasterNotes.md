@@ -44,8 +44,8 @@ conda activate phage-env
 module load sra-toolkit
 ```
 
-## Controls
 ```bash
+## Controls
 fasterq-dump ERR13348292 --split-files
 fasterq-dump ERR13348320 --split-files
 
@@ -54,6 +54,7 @@ fasterq-dump ERR13348298 --split-files
 fasterq-dump ERR13348304 --split-files
 
 gzip *.fastq
+```
 
 ### Converts SRA data into FASTQ files
 
