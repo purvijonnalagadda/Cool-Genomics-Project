@@ -1,7 +1,7 @@
 # Liv, Purvi, Maeve & Sal: Depression vs Control vOTU Analysis
 ## Details
 - Our paper focused on the gut microbiomes of depression and obesity, and they ran a workflow to look at alpha and beta diversity of microbiomes between communities. Since this paper was published relatively recently, we wanted to look at it from a new angle. Specifically, we ran a workflow to look at vOTUs between depression and control groups on a subset of the data. 
-- For the control group, we used sample alias 102 and for the depression group we used sample alias 108 from this [https://www.ebi.ac.uk/ena/browser/view/PRJEB76994](url) page where their data is published
+- For the control group, we used sample alias' **102** & **113** and for the depression group we used sample alias **108** & **128** from this [https://www.ebi.ac.uk/ena/browser/view/PRJEB76994](url) page where their data is published
 ## Workflow Summary 
 For this project, we analyzed viromics sequencing data between depression and control groups. Our workflow included downloading raw FASTQ files, assessing read quality with FastQC, trimming low quality bases and adaptors with trimmomatic, checking cleaned reads with FastQC, assembling reads into contigs with MEGAHIT, and identifying viral contigs for downstream analysis. This repository contains notes, scripts and workflow documentation used to make the analysis reproducible. 
 ## Conclusion
