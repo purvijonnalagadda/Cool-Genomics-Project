@@ -100,28 +100,57 @@ fastqc raw/*.fastq.gz -o fastqc_raw
 for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
 ```bash
-  trimmomatic PE -threads 8 -phred33 \
-    raw/${sample}_1.fastq.gz raw/${sample}_2.fastq.gz \
-    trimmed/${sample}_R1_paired.fastq.gz trimmed/${sample}_R1_unpaired.fastq.gz \
-    trimmed/${sample}_R2_paired.fastq.gz trimmed/${sample}_R2_unpaired.fastq.gz \
-    ILLUMINACLIP:${ADAPTERS}:2:30:10 \
-    SLIDINGWINDOW:4:20 \
-    MINLEN:50
+nano slurm_scripts/02_qc_trim.slurm
 ```
-
-### Removes adapter sequences and trims low-quality bases. Only paired reads will be used for assembly.
-
-
-# STEP 7: FASTQC (TRIMMED READS)
-
 ```bash
-fastqc trimmed/*.fastq.gz -o fastqc_trimmed
+#!/bin/bash
+#SBATCH --job-name=phage_qctrim
+#SBATCH --output=/home/NETID/project_fastq/logs/qctrim_%A_%a.out
+#SBATCH --error=/home/NETID/project_fastq/logs/qctrim_%A_%a.err
+#SBATCH --array=1-4
+#SBATCH --time=08:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=24G
+
+WORKDIR=/home/NETID/project_fastq
+SAMPLE=$(sed -n "${SLURM_ARRAY_TASK_ID}p" ${WORKDIR}/sample_names.txt)
+
+module load anaconda3
+source $(conda info --base)/etc/profile.d/conda.sh
+conda activate phage-env
+
+mkdir -p ${WORKDIR}/fastqc_raw
+mkdir -p ${WORKDIR}/fastqc_trimmed
+mkdir -p ${WORKDIR}/trimmed
+
+ADAPTERS="$CONDA_PREFIX/share/trimmomatic/adapters/TruSeq3-PE.fa"
+
+fastqc ${WORKDIR}/raw/${SAMPLE}_1.fastq.gz ${WORKDIR}/raw/${SAMPLE}_2.fastq.gz -o ${WORKDIR}/fastqc_raw
+
+trimmomatic PE -threads ${SLURM_CPUS_PER_TASK} -phred33 \
+  ${WORKDIR}/raw/${SAMPLE}_1.fastq.gz \
+  ${WORKDIR}/raw/${SAMPLE}_2.fastq.gz \
+  ${WORKDIR}/trimmed/${SAMPLE}_R1_paired.fastq.gz \
+  ${WORKDIR}/trimmed/${SAMPLE}_R1_unpaired.fastq.gz \
+  ${WORKDIR}/trimmed/${SAMPLE}_R2_paired.fastq.gz \
+  ${WORKDIR}/trimmed/${SAMPLE}_R2_unpaired.fastq.gz \
+  ILLUMINACLIP:${ADAPTERS}:2:30:10 \
+  SLIDINGWINDOW:4:20 \
+  MINLEN:50
+
+fastqc ${WORKDIR}/trimmed/${SAMPLE}_R1_paired.fastq.gz ${WORKDIR}/trimmed/${SAMPLE}_R2_paired.fastq.gz -o ${WORKDIR}/fastqc_trimmed
+```
+Run script:
+```bash
+sbatch slurm_scripts/02_qc_trim.slurm
 ```
 
-### Confirms improved read quality
+### Removes adapter sequences and trims low-quality bases. Only paired reads will be used for assembly. Runs FastQC (raw), Trimmomatic trimming, and FastQC (trimmed) via SLURM
 
 
-# STEP 8: ASSEMBLY (MEGAHIT)
+# STEP 7: ASSEMBLY (MEGAHIT)
 
 for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
@@ -136,7 +165,7 @@ for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 ### Assembles reads into contigs
 
 
-# STEP 9: ASSEMBLY STATS
+# STEP 8: ASSEMBLY STATS
 
 for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
@@ -148,7 +177,7 @@ for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 ### Generates assembly metrics (N50, GC, contig count)
 
 
-# STEP 10: SETUP VIRSORTER2
+# STEP 9: SETUP VIRSORTER2
 
 ```bash
 virsorter setup -d ~/db -j 4 --conda-frontend conda
@@ -157,7 +186,7 @@ virsorter setup -d ~/db -j 4 --conda-frontend conda
 ### Downloads VirSorter2 database
 
 
-# STEP 11: RUN VIRSORTER2
+# STEP 10: RUN VIRSORTER2
 
 for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
@@ -173,7 +202,7 @@ for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 ### Identifies viral contigs
 
 
-# STEP 12: COUNT VIRAL CONTIGS
+# STEP 11: COUNT VIRAL CONTIGS
 
 for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
@@ -186,7 +215,7 @@ done > counts/viral_counts.tsv
 ### Counts viral contigs per sample
 
 
-# STEP 13: FILTER CONTIGS ≥ 5 KB
+# STEP 12: FILTER CONTIGS ≥ 5 KB
 
 for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
@@ -199,7 +228,7 @@ for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 ### Keeps high-confidence viral contigs
 
 
-# STEP 14: SETUP CHECKV
+# STEP 13: SETUP CHECKV
 
 ```bash
 cd checkv_db
@@ -210,7 +239,7 @@ cd ..
 ### Downloads CheckV database
 
 
-# STEP 15: RUN CHECKV
+# STEP 14: RUN CHECKV
 
 for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
@@ -225,7 +254,7 @@ for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 ### Assesses viral genome quality
 
 
-# STEP 16: SUMMARIZE CHECKV
+# STEP 15: SUMMARIZE CHECKV
 
 for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
@@ -237,7 +266,7 @@ for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 ### Summarizes viral quality categories
 
 
-# STEP 17: CREATE METADATA
+# STEP 16: CREATE METADATA
 
 ```bash
 echo -e "Sample\tGroup
@@ -250,7 +279,7 @@ ERR13348304\tMDD" > metadata/metadata.tsv
 ### Defines sample groups
 
 
-# STEP 18: FINAL ANALYSIS
+# STEP 17: FINAL ANALYSIS
 
 Compare:
 Viral contig counts (counts/viral_counts.tsv)
