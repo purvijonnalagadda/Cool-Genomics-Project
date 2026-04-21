@@ -10,7 +10,7 @@ Identify and compare bacteriophage communities in gut metagenomic samples from i
 project_fastq/
 ├── raw/
 ├── trimmed/
-├── projectfastqc_out/
+├── projectfastp_out/
 ├── assembly/
 ├── virsorter/
 ├── checkv/
