@@ -45,14 +45,12 @@ module load sra-toolkit
 ```
 
 ## Controls
-fasterq-dump ERR13348288 --split-files
-fasterq-dump ERR13348290 --split-files
-fasterq-dump ERR13348291 --split-files
+fasterq-dump ERR13348292 --split-files
+fasterq-dump ERR13348320 --split-files
 
 ## MDD
-fasterq-dump ERR13348393 --split-files
-fasterq-dump ERR13348396 --split-files
-fasterq-dump ERR13348397 --split-files
+fasterq-dump ERR13348298 --split-files
+fasterq-dump ERR13348304 --split-files
 
 gzip *.fastq
 
@@ -64,52 +62,66 @@ gzip *.fastq
 ```bash
 mkdir project_fastq
 cd project_fastq
-mkdir raw trimmed projectfastqc_out logs slurm_scripts sample_names.txt 
+mkdir raw trimmed fastqc_raw fastqc_trimmed assembly virsorter checkv metadata counts logs slurm_scripts db checkv_db
 
 mv ../*.fastq.gz raw/
+
+echo -e "ERR13348292
+ERR13348320
+ERR13348298
+ERR13348304" > sample_names.txt
 ```
 
-### Organizes files into directories
+### Organizes files into directories and creates a sample list
 
 
-# STEP 4: FASTQC (RAW READS)
+# STEP 4: LOCATE TRIMMOMATIC ADAPTER FILE
 
 ```bash
-fastqc raw/*.fastq.gz -o fastqc_out
+find $CONDA_PREFIX -name "TruSeq3-PE.fa"
+
+ADAPTERS="$CONDA_PREFIX/share/trimmomatic/adapters/TruSeq3-PE.fa"
 ```
 
-### Checks sequencing quality and adapter content
+### Set adapter path and define standard adapter file for trimming
 
 
-# STEP 5: TRIM READS
-
-for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
+# STEP 5: FASTQC (RAW READS)
 
 ```bash
-  fastp \
-    -i raw/${sample}_1.fastq.gz \
-    -I raw/${sample}_2.fastq.gz \
-    -o trimmed/${sample}_R1.fastq.gz \
-    -O trimmed/${sample}_R2.fastq.gz \
-    -h logs/${sample}_fastp.html \
-    -j logs/${sample}_fastp.json
+fastqc raw/*.fastq.gz -o fastqc_raw
+```
+### Checks sequencing quality and adapter content before trimming
+
+# STEP 6: TRIM READS WITH TRIMMOMATIC
+
+for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
+
+```bash
+  trimmomatic PE -threads 8 -phred33 \
+    raw/${sample}_1.fastq.gz raw/${sample}_2.fastq.gz \
+    trimmed/${sample}_R1_paired.fastq.gz trimmed/${sample}_R1_unpaired.fastq.gz \
+    trimmed/${sample}_R2_paired.fastq.gz trimmed/${sample}_R2_unpaired.fastq.gz \
+    ILLUMINACLIP:${ADAPTERS}:2:30:10 \
+    SLIDINGWINDOW:4:20 \
+    MINLEN:50
 ```
 
-### Removes adapters and low-quality bases
+### Removes adapter sequences and trims low-quality bases. Only paired reads will be used for assembly.
 
 
-# STEP 6: FASTQC (TRIMMED READS)
+# STEP 7: FASTQC (TRIMMED READS)
 
 ```bash
-fastqc trimmed/*.fastq.gz -o fastqc_out
+fastqc trimmed/*.fastq.gz -o fastqc_trimmed
 ```
 
 ### Confirms improved read quality
 
 
-# STEP 7: ASSEMBLY (MEGAHIT)
+# STEP 8: ASSEMBLY (MEGAHIT)
 
-for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
+for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
 ```bash
   megahit \
@@ -122,9 +134,9 @@ for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR133
 ### Assembles reads into contigs
 
 
-# STEP 8: ASSEMBLY STATS
+# STEP 9: ASSEMBLY STATS
 
-for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
+for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
 ```bash
   seqkit stats -a assembly/${sample}/final.contigs.fa \
@@ -134,16 +146,18 @@ for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR133
 ### Generates assembly metrics (N50, GC, contig count)
 
 
-# STEP 9: SETUP VIRSORTER2
+# STEP 10: SETUP VIRSORTER2
 
+```bash
 virsorter setup -d ~/db -j 4 --conda-frontend conda
+```
 
-### Downloads viral database
+### Downloads VirSorter2 database
 
 
-# STEP 10: RUN VIRSORTER2
+# STEP 11: RUN VIRSORTER2
 
-for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
+for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
 ```bash
   virsorter run \
@@ -154,25 +168,25 @@ for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR133
     --min-length 5000
 ```
 
-### Identifies viral contigs (bacteriophages)
+### Identifies viral contigs
 
 
-# STEP 11: COUNT VIRAL CONTIGS
+# STEP 12: COUNT VIRAL CONTIGS
 
-for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
+for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
 ```bash
   count=$(grep -c ">" virsorter/${sample}/final-viral-combined.fa)
   echo -e "${sample}\t${count}"
-done > viral_counts.tsv
+done > counts/viral_counts.tsv
 ```
 
 ### Counts viral contigs per sample
 
 
-# STEP 12: FILTER CONTIGS ≥ 5 KB
+# STEP 13: FILTER CONTIGS ≥ 5 KB
 
-for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
+for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
 ```bash
   seqkit seq -m 5000 \
@@ -183,10 +197,9 @@ for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR133
 ### Keeps high-confidence viral contigs
 
 
-# STEP 13: SETUP CHECKV
+# STEP 14: SETUP CHECKV
 
 ```bash
-mkdir checkv_db
 cd checkv_db
 checkv download_database ./
 cd ..
@@ -195,9 +208,9 @@ cd ..
 ### Downloads CheckV database
 
 
-# STEP 14: RUN CHECKV
+# STEP 15: RUN CHECKV
 
-for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
+for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
 ```bash
   checkv end_to_end \
@@ -210,38 +223,36 @@ for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR133
 ### Assesses viral genome quality
 
 
-# STEP 15: SUMMARIZE CHECKV
+# STEP 16: SUMMARIZE CHECKV
 
-for sample in ERR13348288 ERR13348290 ERR13348291 ERR13348393 ERR13348396 ERR13348397
+for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
 ```bash
   echo "=== ${sample} ==="
   tail -n +2 checkv/${sample}/quality_summary.tsv | cut -f8 | sort | uniq -c
 ```
 
-### Summarizes quality categories
+### Summarizes viral quality categories
 
 
-# STEP 16: CREATE METADATA
+# STEP 17: CREATE METADATA
 
 ```bash
 echo -e "Sample\tGroup
-ERR13348288\tControl
-ERR13348290\tControl
-ERR13348291\tControl
-ERR13348393\tMDD
-ERR13348396\tMDD
-ERR13348397\tMDD" > metadata.tsv
+ERR13348292\tControl
+ERR13348320\tControl
+ERR13348298\tMDD
+ERR13348304\tMDD" > metadata/metadata.tsv
 ```
 
 ### Defines sample groups
 
 
-# STEP 17: FINAL ANALYSIS
+# STEP 18: FINAL ANALYSIS
 
 Compare:
-Viral contig counts (viral_counts.tsv)
-High-quality viral contigs (CheckV)
+Viral contig counts (counts/viral_counts.tsv)
+High-quality viral contigs (CheckV/)
 
 ### Goal:
 Identify differences in phage abundance between MDD and controls
