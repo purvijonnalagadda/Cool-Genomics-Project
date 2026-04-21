@@ -45,6 +45,7 @@ module load sra-toolkit
 ```
 
 ## Controls
+```bash
 fasterq-dump ERR13348292 --split-files
 fasterq-dump ERR13348320 --split-files
 
