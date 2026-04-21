@@ -7,14 +7,27 @@ Identify and compare bacteriophage communities in gut metagenomic samples from i
 ## Project Directory Structure
 
 ```bash
-project_fastq/
-├── raw/                   # original FastQ files
+/home/NETID/project_fastq/
+│
+├── raw/                   # original FASTQ files (from SRA)
 ├── trimmed/               # fastp output
-├── projectfastqc_out/     # fastp HTML + JSON reports
-├── logs/                  # SLURM output/error logs
-├── slurm_scripts/         # all .slurm scripts
-├── sample_names.txt/      # list of samples
-└── alignment/             # bowtie2 outputs
+├── projectfastqc_out/     # fastp + FastQC reports
+│
+├── assembly/              # MEGAHIT outputs (contigs)
+├── virsorter/             # VirSorter2 outputs (viral contigs)
+├── checkv/                # CheckV outputs (quality assessment)
+│
+├── metadata/              # sample metadata (groups)
+├── counts/                # summary tables (viral counts, etc.)
+│
+├── logs/                  # SLURM .out / .err files
+├── slurm_scripts/         # all SLURM scripts
+│
+├── refs/                  # (optional) reference DBs (if needed later)
+├── db/                    # VirSorter2 database
+├── checkv_db/             # CheckV database
+│
+└── sample_names.txt 
 ```
 
 ## Full Workflow
