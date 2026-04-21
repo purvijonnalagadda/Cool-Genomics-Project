@@ -58,7 +58,7 @@ gzip *.fastq
 ```bash
 mkdir project_fastq
 cd project_fastq
-mkdir raw trimmed assembly virsorter checkv logs fastqc_out
+mkdir raw trimmed projectfastqc_out logs slurm_scripts sample_names.txt 
 
 mv ../*.fastq.gz raw/
 ```
