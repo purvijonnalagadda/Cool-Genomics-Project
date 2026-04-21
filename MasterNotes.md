@@ -261,6 +261,7 @@ Identify differences in phage abundance between MDD and controls
 
 # Final Directory Structure
 
+```bash
 /home/NETID/project_fastq/
 │
 ├── raw/                        # original FASTQ files from SRA
@@ -352,3 +353,4 @@ Identify differences in phage abundance between MDD and controls
 ├── slurm_scripts/              # SLURM scripts
 │
 └── sample_names.txt            # list of sample IDs
+```
