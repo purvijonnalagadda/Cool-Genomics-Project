@@ -9,28 +9,21 @@ Identify and compare bacteriophage communities in gut metagenomic samples from i
 ```bash
 /home/NETID/project_fastq/
 │
-├── raw/                   # original FASTQ files (from SRA)
-├── trimmed/               # fastp output
-├── projectfastqc_out/     # fastp + FastQC reports
-├── adapters/              # ILLUMINA adapter files (TruSeq3)
-│
-├── assembly/              # MEGAHIT outputs (contigs)
-├── virsorter/             # VirSorter2 outputs (viral contigs)
-├── checkv/                # CheckV outputs (quality assessment)
-│
-├── metadata/              # sample metadata (groups)
-├── counts/                # summary tables (viral counts, etc.)
-│
+├── raw/                   # original FASTQ files from SRA
+├── trimmed/               # Trimmomatic output
+├── fastqc_raw/            # FastQC reports for raw reads
+├── fastqc_trimmed/        # FastQC reports for trimmed reads
+├── assembly/              # MEGAHIT outputs
+├── virsorter/             # VirSorter2 outputs
+├── checkv/                # CheckV outputs
+├── metadata/              # sample metadata
+├── counts/                # summary tables
 ├── logs/                  # SLURM .out / .err files
-├── slurm_scripts/         # all SLURM scripts
-│
-├── refs/                  # (optional) reference DBs (if needed later)
+├── slurm_scripts/         # SLURM scripts
 ├── db/                    # VirSorter2 database
 ├── checkv_db/             # CheckV database
-│
-└── sample_names.txt       # text file (not folder)
+└── sample_names.txt       # list of sample accessions
 ```
-
 ## Full Workflow
 
 
