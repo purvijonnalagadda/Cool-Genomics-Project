@@ -27,7 +27,7 @@ Identify and compare bacteriophage communities in gut metagenomic samples from i
 ├── db/                    # VirSorter2 database
 ├── checkv_db/             # CheckV database
 │
-└── sample_names.txt 
+└── sample_names.txt       # text file (not folder)
 ```
 
 ## Full Workflow
