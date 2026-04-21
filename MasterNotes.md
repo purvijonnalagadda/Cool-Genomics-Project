@@ -8,14 +8,13 @@ Identify and compare bacteriophage communities in gut metagenomic samples from i
 
 ```bash
 project_fastq/
-├── raw/
-├── trimmed/
-├── projectfastq_out/
-├── assembly/
-├── virsorter/
-├── checkv/
-├── logs/
-└── metadata/
+├── raw/                   # original FastQ files
+├── trimmed/               # fastp output
+├── projectfastqc_out/     # fastp HTML + JSON reports
+├── logs/                  # SLURM output/error logs
+├── slurm_scripts/         # all .slurm scripts
+├── sample_names.txt/      # list of samples
+└── alignment/             # bowtie2 outputs
 ```
 
 ## Full Workflow
