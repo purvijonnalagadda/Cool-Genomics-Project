@@ -258,3 +258,97 @@ High-quality viral contigs (CheckV/)
 
 ### Goal:
 Identify differences in phage abundance between MDD and controls
+
+# Final Directory Structure
+
+/home/NETID/project_fastq/
+│
+├── raw/                        # original FASTQ files from SRA
+│   ├── ERR13348292_1.fastq.gz
+│   ├── ERR13348292_2.fastq.gz
+│   ├── ERR13348320_1.fastq.gz
+│   ├── ERR13348320_2.fastq.gz
+│   ├── ERR13348298_1.fastq.gz
+│   ├── ERR13348298_2.fastq.gz
+│   ├── ERR13348304_1.fastq.gz
+│   └── ERR13348304_2.fastq.gz
+│
+├── trimmed/                    # Trimmomatic outputs
+│   ├── ERR13348292_R1_paired.fastq.gz
+│   ├── ERR13348292_R1_unpaired.fastq.gz
+│   ├── ERR13348292_R2_paired.fastq.gz
+│   ├── ERR13348292_R2_unpaired.fastq.gz
+│   ├── ERR13348320_R1_paired.fastq.gz
+│   ├── ERR13348320_R1_unpaired.fastq.gz
+│   ├── ERR13348320_R2_paired.fastq.gz
+│   ├── ERR13348320_R2_unpaired.fastq.gz
+│   ├── ERR13348298_R1_paired.fastq.gz
+│   ├── ERR13348298_R1_unpaired.fastq.gz
+│   ├── ERR13348298_R2_paired.fastq.gz
+│   ├── ERR13348298_R2_unpaired.fastq.gz
+│   ├── ERR13348304_R1_paired.fastq.gz
+│   ├── ERR13348304_R1_unpaired.fastq.gz
+│   ├── ERR13348304_R2_paired.fastq.gz
+│   └── ERR13348304_R2_unpaired.fastq.gz
+│
+├── fastqc_raw/                 # FastQC reports for raw reads
+│   ├── ERR13348292_1_fastqc.html
+│   ├── ERR13348292_2_fastqc.html
+│   ├── ERR13348320_1_fastqc.html
+│   ├── ERR13348320_2_fastqc.html
+│   ├── ERR13348298_1_fastqc.html
+│   ├── ERR13348298_2_fastqc.html
+│   ├── ERR13348304_1_fastqc.html
+│   └── ERR13348304_2_fastqc.html
+│
+├── fastqc_trimmed/             # FastQC reports for trimmed paired reads
+│   ├── ERR13348292_R1_paired_fastqc.html
+│   ├── ERR13348292_R2_paired_fastqc.html
+│   ├── ERR13348320_R1_paired_fastqc.html
+│   ├── ERR13348320_R2_paired_fastqc.html
+│   ├── ERR13348298_R1_paired_fastqc.html
+│   ├── ERR13348298_R2_paired_fastqc.html
+│   ├── ERR13348304_R1_paired_fastqc.html
+│   └── ERR13348304_R2_paired_fastqc.html
+│
+├── assembly/                   # MEGAHIT outputs
+│   ├── ERR13348292/
+│   │   ├── final.contigs.fa
+│   │   └── log
+│   ├── ERR13348320/
+│   ├── ERR13348298/
+│   └── ERR13348304/
+│
+├── virsorter/                  # VirSorter2 outputs
+│   ├── ERR13348292/
+│   │   ├── final-viral-combined.fa
+│   │   ├── final-viral-score.tsv
+│   │   ├── final-viral-boundary.tsv
+│   │   └── viral_5kb.fa
+│   ├── ERR13348320/
+│   ├── ERR13348298/
+│   └── ERR13348304/
+│
+├── checkv/                     # CheckV outputs
+│   ├── ERR13348292/
+│   │   ├── quality_summary.tsv
+│   │   ├── completeness.tsv
+│   │   ├── contamination.tsv
+│   │   └── viruses.fna
+│   ├── ERR13348320/
+│   ├── ERR13348298/
+│   └── ERR13348304/
+│
+├── counts/                     # summary tables
+│   └── viral_counts.tsv
+│
+├── metadata/                   # sample metadata
+│   └── metadata.tsv
+│
+├── db/                         # VirSorter2 database
+├── checkv_db/                  # CheckV database
+│
+├── logs/                       # SLURM .out / .err files
+├── slurm_scripts/              # SLURM scripts
+│
+└── sample_names.txt            # list of sample IDs
