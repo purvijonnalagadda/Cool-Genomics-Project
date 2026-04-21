@@ -12,6 +12,7 @@ Identify and compare bacteriophage communities in gut metagenomic samples from i
 ├── raw/                   # original FASTQ files (from SRA)
 ├── trimmed/               # fastp output
 ├── projectfastqc_out/     # fastp + FastQC reports
+├── adapters/              # ILLUMINA adapter files (TruSeq3)
 │
 ├── assembly/              # MEGAHIT outputs (contigs)
 ├── virsorter/             # VirSorter2 outputs (viral contigs)
