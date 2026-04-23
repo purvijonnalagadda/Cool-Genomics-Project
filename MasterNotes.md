@@ -105,8 +105,8 @@ nano slurm_scripts/02_qc_trim.slurm
 ```bash
 #!/bin/bash
 #SBATCH --job-name=phage_qctrim
-#SBATCH --output=/home/NETID/project_fastq/logs/qctrim_%A_%a.out
-#SBATCH --error=/home/NETID/project_fastq/logs/qctrim_%A_%a.err
+#SBATCH --output=/home/sja111/FinalProject/Readcleaning/logs/qctrim_%A_%a.out
+#SBATCH --error=/home/sja111/FinalProject/Readcleaning/logs/qctrim_%A_%a.err
 #SBATCH --array=1-4
 #SBATCH --time=08:00:00
 #SBATCH --nodes=1
@@ -114,7 +114,7 @@ nano slurm_scripts/02_qc_trim.slurm
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=24G
 
-WORKDIR=/home/NETID/project_fastq
+WORKDIR=/home/sja111/FinalProject/Readcleaning
 SAMPLE=$(sed -n "${SLURM_ARRAY_TASK_ID}p" ${WORKDIR}/sample_names.txt)
 
 module load anaconda3
@@ -127,11 +127,28 @@ mkdir -p ${WORKDIR}/trimmed
 
 ADAPTERS="$CONDA_PREFIX/share/trimmomatic/adapters/TruSeq3-PE.fa"
 
-fastqc ${WORKDIR}/raw/${SAMPLE}_1.fastq.gz ${WORKDIR}/raw/${SAMPLE}_2.fastq.gz -o ${WORKDIR}/fastqc_raw
+READ1=${WORKDIR}/raw/${SAMPLE}_1.fastq.gz
+READ2=${WORKDIR}/raw/${SAMPLE}_2.fastq.gz
+
+echo "Sample: ${SAMPLE}"
+echo "Read 1: ${READ1}"
+echo "Read 2: ${READ2}"
+
+if [[ ! -f "${READ1}" ]]; then
+  echo "ERROR: Missing file ${READ1}"
+  exit 1
+fi
+
+if [[ ! -f "${READ2}" ]]; then
+  echo "ERROR: Missing file ${READ2}"
+  exit 1
+fi
+
+fastqc "${READ1}" "${READ2}" -o ${WORKDIR}/fastqc_raw
 
 trimmomatic PE -threads ${SLURM_CPUS_PER_TASK} -phred33 \
-  ${WORKDIR}/raw/${SAMPLE}_1.fastq.gz \
-  ${WORKDIR}/raw/${SAMPLE}_2.fastq.gz \
+  "${READ1}" \
+  "${READ2}" \
   ${WORKDIR}/trimmed/${SAMPLE}_R1_paired.fastq.gz \
   ${WORKDIR}/trimmed/${SAMPLE}_R1_unpaired.fastq.gz \
   ${WORKDIR}/trimmed/${SAMPLE}_R2_paired.fastq.gz \
@@ -140,7 +157,10 @@ trimmomatic PE -threads ${SLURM_CPUS_PER_TASK} -phred33 \
   SLIDINGWINDOW:4:20 \
   MINLEN:50
 
-fastqc ${WORKDIR}/trimmed/${SAMPLE}_R1_paired.fastq.gz ${WORKDIR}/trimmed/${SAMPLE}_R2_paired.fastq.gz -o ${WORKDIR}/fastqc_trimmed
+fastqc \
+  ${WORKDIR}/trimmed/${SAMPLE}_R1_paired.fastq.gz \
+  ${WORKDIR}/trimmed/${SAMPLE}_R2_paired.fastq.gz \
+  -o ${WORKDIR}/fastqc_trimmed
 ```
 Run script:
 ```bash
