@@ -118,14 +118,15 @@ WORKDIR=/home/sja111/FinalProject/Readcleaning
 SAMPLE=$(sed -n "${SLURM_ARRAY_TASK_ID}p" ${WORKDIR}/sample_names.txt)
 
 module load anaconda3
-source $(conda info --base)/etc/profile.d/conda.sh
+source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate phage-env
 
 mkdir -p ${WORKDIR}/fastqc_raw
 mkdir -p ${WORKDIR}/fastqc_trimmed
 mkdir -p ${WORKDIR}/trimmed
+mkdir -p ${WORKDIR}/logs
 
-ADAPTERS="$CONDA_PREFIX/share/trimmomatic/adapters/TruSeq3-PE.fa"
+ADAPTERS="${CONDA_PREFIX}/share/trimmomatic/adapters/TruSeq3-PE.fa"
 
 READ1=${WORKDIR}/raw/${SAMPLE}_1.fastq.gz
 READ2=${WORKDIR}/raw/${SAMPLE}_2.fastq.gz
@@ -133,6 +134,7 @@ READ2=${WORKDIR}/raw/${SAMPLE}_2.fastq.gz
 echo "Sample: ${SAMPLE}"
 echo "Read 1: ${READ1}"
 echo "Read 2: ${READ2}"
+echo "Adapters: ${ADAPTERS}"
 
 if [[ ! -f "${READ1}" ]]; then
   echo "ERROR: Missing file ${READ1}"
@@ -144,22 +146,27 @@ if [[ ! -f "${READ2}" ]]; then
   exit 1
 fi
 
+if [[ ! -f "${ADAPTERS}" ]]; then
+  echo "ERROR: Missing adapter file ${ADAPTERS}"
+  exit 1
+fi
+
 fastqc "${READ1}" "${READ2}" -o ${WORKDIR}/fastqc_raw
 
 trimmomatic PE -threads ${SLURM_CPUS_PER_TASK} -phred33 \
   "${READ1}" \
   "${READ2}" \
-  ${WORKDIR}/trimmed/${SAMPLE}_R1_paired.fastq.gz \
-  ${WORKDIR}/trimmed/${SAMPLE}_R1_unpaired.fastq.gz \
-  ${WORKDIR}/trimmed/${SAMPLE}_R2_paired.fastq.gz \
-  ${WORKDIR}/trimmed/${SAMPLE}_R2_unpaired.fastq.gz \
+  "${WORKDIR}/trimmed/${SAMPLE}_R1_paired.fastq.gz" \
+  "${WORKDIR}/trimmed/${SAMPLE}_R1_unpaired.fastq.gz" \
+  "${WORKDIR}/trimmed/${SAMPLE}_R2_paired.fastq.gz" \
+  "${WORKDIR}/trimmed/${SAMPLE}_R2_unpaired.fastq.gz" \
   ILLUMINACLIP:${ADAPTERS}:2:30:10 \
   SLIDINGWINDOW:4:20 \
   MINLEN:50
 
 fastqc \
-  ${WORKDIR}/trimmed/${SAMPLE}_R1_paired.fastq.gz \
-  ${WORKDIR}/trimmed/${SAMPLE}_R2_paired.fastq.gz \
+  "${WORKDIR}/trimmed/${SAMPLE}_R1_paired.fastq.gz" \
+  "${WORKDIR}/trimmed/${SAMPLE}_R2_paired.fastq.gz" \
   -o ${WORKDIR}/fastqc_trimmed
 ```
 Run script:
