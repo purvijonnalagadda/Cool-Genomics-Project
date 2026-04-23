@@ -113,6 +113,8 @@ nano slurm_scripts/02_qc_trim.slurm
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=24G
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=sja111@georgetown.edu
 
 WORKDIR=/home/sja111/FinalProject/Readcleaning
 SAMPLE=$(sed -n "${SLURM_ARRAY_TASK_ID}p" ${WORKDIR}/sample_names.txt)
