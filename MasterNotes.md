@@ -117,7 +117,15 @@ nano slurm_scripts/02_qc_trim.slurm
 #SBATCH --mail-user=sja111@georgetown.edu
 
 WORKDIR=/home/sja111/FinalProject/Readcleaning
-SAMPLE=$(sed -n "${SLURM_ARRAY_TASK_ID}p" ${WORKDIR}/sample_names.txt)
+SAMPLE=$(awk "NR==${SLURM_ARRAY_TASK_ID}" ${WORKDIR}/sample_names.txt)
+
+echo "SLURM ID: ${SLURM_ARRAY_TASK_ID}"
+echo "SAMPLE: ${SAMPLE}"
+
+if [[ -z "${SAMPLE}" ]]; then
+  echo "ERROR: SAMPLE is empty"
+  exit 1
+fi
 
 module load anaconda3
 source "$(conda info --base)/etc/profile.d/conda.sh"
