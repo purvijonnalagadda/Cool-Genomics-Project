@@ -104,75 +104,32 @@ nano slurm_scripts/02_qc_trim.slurm
 ```
 ```bash
 #!/bin/bash
-#SBATCH --job-name=phage_qctrim
-#SBATCH --output=/home/sja111/FinalProject/Readcleaning/logs/qctrim_%A_%a.out
-#SBATCH --error=/home/sja111/FinalProject/Readcleaning/logs/qctrim_%A_%a.err
-#SBATCH --array=1-4
-#SBATCH --time=08:00:00
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=24G
-#SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=sja111@georgetown.edu
+#SBATCH --job-name=projecttrims.SBATCH --output=z01.%x
+#SBATCH --mail-type=END,FAIL --mail-user=user@email.com
+#SBATCH --nodes=1 --ntasks=1 --cpus-per-task1 --time=3:00:00
 
-WORKDIR=/home/sja111/FinalProject/Readcleaning
-SAMPLE=$(awk "NR==${SLURM_ARRAY_TASK_ID}" ${WORKDIR}/sample_names.txt)
+shopt -s expand_aliases
+module load trimmomatic
 
-echo "SLURM ID: ${SLURM_ARRAY_TASK_ID}"
-echo "SAMPLE: ${SAMPLE}"
+adapters=/home/user/fastq_files_project/TruSeq-PE.fa
+input_R1=/home/user/fastq_files_project/raw/<SAMPLE>_1.fastqc.gz
+input_R2=/home/user/fastq_files_project/raw/<SAMPLE>.fastqc.gz
+output_R1_PE=/home/user/fastq_files_project/trimmed/<SAMPLE>_1_trmPE.fq.gz
+output_R1_SE=/home/user/fastq_files_project/trimmed/<SAMPLE>_1_trmPE.fq.gz
+output_R2_PE=/home/user/fastq_files_project/trimmed/<SAMPLE_2_trmPE.fq.gz
+output_R2_SE=/home/user/fastq_files_project/trimmed/<SAMPLE>_2_trmPE.fq.gz
 
-if [[ -z "${SAMPLE}" ]]; then
-  echo "ERROR: SAMPLE is empty"
-  exit 1
-fi
+trimmomatic PE \
+$input_R1 \ 
+$input_R2 \
+$output_R1_PE $output_R1_SE \
+$output_R2_PE $output_R2_SE \
 
-module load anaconda3
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate phage-env
-
-mkdir -p ${WORKDIR}/fastqc_raw
-mkdir -p ${WORKDIR}/fastqc_trimmed
-mkdir -p ${WORKDIR}/trimmed
-mkdir -p ${WORKDIR}/logs
-
-ADAPTERS="${CONDA_PREFIX}/share/trimmomatic/adapters/TruSeq3-PE.fa"
-
-READ1=${WORKDIR}/raw/${SAMPLE}_1.fastq.gz
-READ2=${WORKDIR}/raw/${SAMPLE}_2.fastq.gz
-
-echo "Sample: ${SAMPLE}"
-echo "Read 1: ${READ1}"
-echo "Read 2: ${READ2}"
-echo "Adapters: ${ADAPTERS}"
-
-if [[ ! -f "${READ1}" ]]; then
-  echo "ERROR: Missing file ${READ1}"
-  exit 1
-fi
-
-if [[ ! -f "${READ2}" ]]; then
-  echo "ERROR: Missing file ${READ2}"
-  exit 1
-fi
-
-if [[ ! -f "${ADAPTERS}" ]]; then
-  echo "ERROR: Missing adapter file ${ADAPTERS}"
-  exit 1
-fi
-
-fastqc "${READ1}" "${READ2}" -o ${WORKDIR}/fastqc_raw
-
-trimmomatic PE -threads ${SLURM_CPUS_PER_TASK} -phred33 \
-  "${READ1}" \
-  "${READ2}" \
-  "${WORKDIR}/trimmed/${SAMPLE}_R1_paired.fastq.gz" \
-  "${WORKDIR}/trimmed/${SAMPLE}_R1_unpaired.fastq.gz" \
-  "${WORKDIR}/trimmed/${SAMPLE}_R2_paired.fastq.gz" \
-  "${WORKDIR}/trimmed/${SAMPLE}_R2_unpaired.fastq.gz" \
-  ILLUMINACLIP:${ADAPTERS}:2:30:10 \
-  SLIDINGWINDOW:4:20 \
-  MINLEN:50
+LEADING:10
+TRAILING:10
+ILLUMINACLIP:$adapters:2:30:10 \
+SLIDINGWINDOW:4:20 \
+MINLEN:50 \
 
 fastqc \
   "${WORKDIR}/trimmed/${SAMPLE}_R1_paired.fastq.gz" \
