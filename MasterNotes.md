@@ -222,7 +222,117 @@ for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 ### Keeps high-confidence viral contigs
 
 
-# STEP 13: SETUP CHECKV
+# STEP 13: COMBINE VIRAL CONTIGS ACROSS SAMPLES
+
+```bash
+mkdir -p combined_votus
+
+> combined_votus/all_viral_contigs.fa
+
+for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
+do
+  awk -v sample="$sample" '
+    /^>/ {print ">" sample "_" substr($0,2)}
+    !/^>/ {print}
+  ' virsorter/${sample}/viral_5kb.fa >> combined_votus/all_viral_contigs.fa
+done
+
+grep -c ">" combined_votus/all_viral_contigs.fa
+```
+
+# STEP 14: STEP 14: CLUSTER VIRAL CONTIGS INTO vOTUs WITH vCLUST
+
+```bash
+module load mamba
+source $(mamba info --base)/etc/profile.d/conda.sh
+
+mamba create -y -n votu-env -c bioconda -c conda-forge vclust
+mamba activate votu-env
+```
+
+```bash
+cd combined_votus
+
+vclust prefilter \
+  -i all_viral_contigs.fa \
+  -o fltr.txt
+
+vclust align \
+  -i all_viral_contigs.fa \
+  -o ani.tsv \
+  --filter fltr.txt
+
+vclust cluster \
+  -i ani.tsv \
+  -o clusters.tsv \
+  --ids ani.ids.tsv \
+  --metric ani \
+  --ani 0.95 \
+  --out-repr
+```
+
+```bash
+tail -n +2 clusters.tsv | awk '{print $2}' | sort -u > votu_seeds.txt
+
+mamba activate megahit-env
+
+seqkit grep -f votu_seeds.txt all_viral_contigs.fa > votus_final.fna
+
+grep -c ">" votus_final.fna
+```
+
+# STEP 15: BUILD BOWTIE2 INDEX FROM vOTUs
+
+```bash
+cd /home/NETID/project_fastq
+
+mkdir -p bowtie2
+
+module load bowtie2
+
+bowtie2-build combined_votus/votus_final.fna bowtie2/votu_index
+```
+
+# STEP 16: MAP READS BACK TO vOTUs WITH BOWTIE2 AND SAMTOOLS
+
+```bash
+module load bowtie2
+module load samtools
+
+for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
+do
+  mkdir -p bowtie2/${sample}
+
+  bowtie2 -p 8 \
+    -x bowtie2/votu_index \
+    -1 trimmed/${sample}_R1_paired.fastq.gz \
+    -2 trimmed/${sample}_R2_paired.fastq.gz \
+  | samtools view -bS - \
+  | samtools sort -o bowtie2/${sample}/${sample}_sorted.bam
+
+  samtools index bowtie2/${sample}/${sample}_sorted.bam
+done
+```
+
+# STEP 17: ESTIMATE vOTU ABUNDANCE WITH COVERM
+
+```bash
+module load mamba
+source $(mamba info --base)/etc/profile.d/conda.sh
+
+mamba create -y -n coverm-env -c bioconda -c conda-forge coverm
+mamba activate coverm-env
+```
+
+```bash
+coverm contig \
+  --bam-files bowtie2/*/*_sorted.bam \
+  --reference combined_votus/votus_final.fna \
+  --methods tpm \
+  --output-file counts/votu_tpm_abundance.tsv
+```
+
+# STEP 18: SETUP CHECKV
 
 ```bash
 cd checkv_db
@@ -233,7 +343,7 @@ cd ..
 ### Downloads CheckV database
 
 
-# STEP 14: RUN CHECKV
+# STEP 19: RUN CHECKV
 
 for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
@@ -248,7 +358,7 @@ for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 ### Assesses viral genome quality
 
 
-# STEP 15: SUMMARIZE CHECKV
+# STEP 20: SUMMARIZE CHECKV
 
 for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
@@ -260,7 +370,7 @@ for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 ### Summarizes viral quality categories
 
 
-# STEP 16: CREATE METADATA
+# STEP 21: CREATE METADATA
 
 ```bash
 echo -e "Sample\tGroup
@@ -273,7 +383,7 @@ ERR13348304\tMDD" > metadata/metadata.tsv
 ### Defines sample groups
 
 
-# STEP 17: FINAL ANALYSIS
+# STEP 22: FINAL ANALYSIS
 
 Compare:
 Viral contig counts (counts/viral_counts.tsv)
