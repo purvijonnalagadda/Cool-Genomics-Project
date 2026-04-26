@@ -149,11 +149,33 @@ sbatch slurm_scripts/02_qc_trim.slurm
 for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
 ```bash
-  megahit \
-    -1 trimmed/${sample}_R1.fastq.gz \
-    -2 trimmed/${sample}_R2.fastq.gz \
-    -t 8 \
-    -o assembly/${sample}
+
+#!/bin/bash
+#SBATCH --job-name=megahit_sample298
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+#SBATCH --time=03:00:00
+#SBATCH --output=/home/sja111/FinalProject/Assembly/logs/megahit_%j.out
+#SBATCH --error=/home/sja111/FinalProject/Assembly/megahit_%j.err
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=sja111@georgetown.edu
+
+module load mamba/
+source $(mamba info --base)/etc/profile.d/conda.sh
+conda activate megahit-env
+
+READ1=/home/sja111/FinalProject/Readcleaning/trimmedDEP/ERR13348298_1_trmPE.fq.gz
+READ2=/home/sja111/FinalProject/Readcleaning/trimmedDEP/ERR13348298_2_trmPE.fq.gz
+OUTDIR=/home/sja111/FinalProject/Assembly/Depression/298_megahit_out
+
+megahit \
+  -1 ${READ1} \
+  -2 ${READ2} \
+  -t ${SLURM_CPUS_PER_TASK} \
+  -o ${OUTDIR}
+
+echo "Done. Contigs should be in ${OUTDIR}/final.contigs.fa"
 ```
 
 ### Assembles reads into contigs
@@ -185,12 +207,45 @@ virsorter setup -d ~/db -j 4 --conda-frontend conda
 for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 
 ```bash
-  virsorter run \
-    -w virsorter/${sample} \
-    -i assembly/${sample}/final.contigs.fa \
-    --keep-original-seq \
-    --include-groups dsDNAphage,ssDNA \
-    --min-length 5000
+
+#!/bin/bash
+#SBATCH --job-name=virsorter292
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=32
+#SBATCH --mem=128G
+#SBATCH --time=03:00:00
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=sja111@georgetown.edu
+#SBATCH --output=/home/sja111/FinalProject/Virsorter/logs/virsorter.j%.out
+#SBATCH --error=/home/sja111/FinalProject/Virsorter/logs/virsorter.j%.err
+
+# ==== Load mamba (students: no need to change) ====
+module load mamba
+source $(mamba info --base)/etc/profile.d/conda.sh
+
+# Activate the environment where you had VirSorter2 installed
+mamba activate vs2-env
+
+# ==== Set paths and filenames (students: edit this block!) ====
+#set up directories
+INDIR=/home/sja111/FinalProject/Assembly/contigs         #directory where input will come from
+OUTROOT=/home/sja111/FinalProject/Virsorter/     #directory output will go
+mkdir -p "${OUTROOT}"                                    #new directory to be created for output files
+
+SAMPLE_ID=292                                            #just the basic sample name (sample2 ?)
+INPUT="${INDIR}/final.contigs292.fa"                     #contig file name/location
+OUTDIR="${OUTROOT}/vs2-${SAMPLE_ID}"                     #where you’ll find the output files
+mkdir -p "${OUTDIR}"
+
+
+# ==== Run virsorter2 with >5kb cutoff and DNA virus categories 
+echo "Running VirSorter2 on ${INPUT}"
+virsorter run \
+  -w "${OUTDIR}" \
+  -i "${INPUT}" \
+  --keep-original-seq \
+  --include-groups dsDNAphage,NCLDV,ssDNA \
+  --min-length 5000
 ```
 
 ### Identifies viral contigs
