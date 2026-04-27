@@ -219,14 +219,14 @@ for sample in ERR13348292 ERR13348320 ERR13348298 ERR13348304
 #SBATCH --output=/home/sja111/FinalProject/Virsorter/logs/virsorter.j%.out
 #SBATCH --error=/home/sja111/FinalProject/Virsorter/logs/virsorter.j%.err
 
-# ==== Load mamba (students: no need to change) ====
+# ==== Load mamba ====
 module load mamba
 source $(mamba info --base)/etc/profile.d/conda.sh
 
 # Activate the environment where you had VirSorter2 installed
 mamba activate vs2-env
 
-# ==== Set paths and filenames (students: edit this block!) ====
+# ==== Set paths and filenames ====
 #set up directories
 INDIR=/home/sja111/FinalProject/Assembly/contigs         #directory where input will come from
 OUTROOT=/home/sja111/FinalProject/Virsorter/     #directory output will go
