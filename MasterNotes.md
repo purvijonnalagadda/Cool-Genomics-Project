@@ -611,17 +611,6 @@ barplot(
   main = "Per-sample viral diversity"
 )
 ```
-### Defines sample groups
-
-
-# STEP 22: FINAL ANALYSIS
-
-Compare:
-Viral contig counts (counts/viral_counts.tsv)
-High-quality viral contigs (CheckV/)
-
-### Goal:
-Identify differences in phage abundance between MDD and controls
 
 # Final Directory Structure
 
