@@ -699,12 +699,12 @@ barplot(
 │   ├── ERR13348320/
 │   ├── ERR13348298/
 │   └── ERR13348304/
-├── Bowtie-Samtools
+├── Bowtie-Samtools              # Bowtie-Samtools outputs
 │   ├── slurm
 │   ├── logs
 │   ├── votu.index*
 │   └── contigs
-└── CoverM
+└── CoverM                       # CoverM outputs
     ├── slurm
     ├── logs
     ├── bam_files
